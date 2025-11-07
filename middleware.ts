@@ -5,7 +5,7 @@ export function middleware(req: NextRequest) {
   const host = req.headers.get('host') || ''
   const appDomain = process.env.APP_DOMAIN || 'localhost:3000'
 
-  // Manual override for previews: ?tenant=pilot or /t/pilot
+  // Preview override: ?tenant=pilot OR /t/pilot
   const qpTenant = url.searchParams.get('tenant')
   const pathTenant = url.pathname.startsWith('/t/') ? url.pathname.split('/')[2] || null : null
   const forcedTenant = qpTenant || pathTenant
@@ -21,9 +21,9 @@ export function middleware(req: NextRequest) {
 
   let subdomain: string | null = null
   if (isLocal) {
-    if (parts.length > 2) subdomain = parts[0]            // tenant.localhost
+    if (parts.length > 2) subdomain = parts[0]          // tenant.localhost
   } else if (host.endsWith(appDomain) && parts.length > apexParts.length) {
-    subdomain = parts[0]                                   // tenant.yourapp.com
+    subdomain = parts[0]                                 // tenant.yourapp.com
   }
 
   if (subdomain) {
@@ -31,6 +31,7 @@ export function middleware(req: NextRequest) {
     res.cookies.set('tenant_subdomain', subdomain, { path: '/' })
     return res
   }
+
   return NextResponse.next()
 }
 
