@@ -20,3 +20,5 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
