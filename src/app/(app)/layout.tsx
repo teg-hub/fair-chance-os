@@ -6,7 +6,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen grid grid-rows-[auto_1fr]">
       <header className="border-b bg-white">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-6">
-          <div className="font-semibold text-blue-700">FairChance</div>
+          <div className="font-semibold text-blue-700">FairChanceOS</div>
           <nav className="flex gap-4 text-sm">
             <Link href="/" className="hover:underline">Dashboard</Link>
             <Link href="/employees" className="hover:underline">Employees</Link>
