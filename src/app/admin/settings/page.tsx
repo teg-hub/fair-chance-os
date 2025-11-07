@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabaseBrowser } from '@/lib/supabase'
+import { supabaseBrowser } from '@/lib/supabase-browser'
+
 
 export default function AdminSettings() {
   const sb = supabaseBrowser()
