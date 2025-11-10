@@ -3,9 +3,20 @@ import { getTenant } from '@/lib/tenant'
 
 export default async function CoordinatorAnalytics() {
   const tenant = await getTenant(); if (!tenant) return null
-  const sb = supabaseServer()
-  const { data: rr } = await sb.from('v_response_rate').select('*').eq('tenant_id', tenant.id).maybeSingle()
-  const { data: tti } = await sb.from('v_time_to_intake').select('*').eq('tenant_id', tenant.id).maybeSingle()
+
+  // Loosen types to avoid view-generic inference errors during setup
+  const sb: any = supabaseServer()
+
+  const { data: rr }  = await sb.from('v_response_rate')
+    .select('*')
+    .eq('tenant_id', tenant.id)
+    .maybeSingle()
+
+  const { data: tti } = await sb.from('v_time_to_intake')
+    .select('*')
+    .eq('tenant_id', tenant.id)
+    .maybeSingle()
+
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Coordinator Analytics</h1>
