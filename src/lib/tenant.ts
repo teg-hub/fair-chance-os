@@ -1,8 +1,6 @@
-'use server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
-import { Database } from './types'
-
+export type Database = any
 export type Tenant = { id: string; name: string; subdomain: string }
 
 export async function getTenant() {
@@ -13,7 +11,7 @@ export async function getTenant() {
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+    { cookies: { get: (name) => cookieStore.get(name)?.value }, db: { schema: 'app' } }
   )
   const { data, error } = await supabase
     .from('tenants')
