@@ -15,7 +15,6 @@ export function middleware(req: NextRequest) {
     return res
   }
 
-  // Subdomain detection for localhost and custom domains
   const parts = host.split(':')[0].split('.')
   const apexParts = appDomain.split(':')[0].split('.')
   const isLocal = host.includes('localhost')
