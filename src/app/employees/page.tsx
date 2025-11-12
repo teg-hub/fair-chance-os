@@ -5,9 +5,17 @@ import Link from 'next/link'
 export default async function EmployeesPage() {
   const tenant = await getTenant()
   if (!tenant) return null
-  const sb = supabaseServer()
-  const { data } = await sb.from('employees')
-    .select('id, first_name, last_name, employment_type, stage, is_active, next_meeting_at:progress_notes!employees_id_fkey(next_meeting_at), departments:department_id(name), coordinator:coordinator_id')
+
+  // Loosen types to avoid inference issues during setup
+  const sb: any = supabaseServer()
+
+  const { data } = await sb
+    .from('employees')
+    .select(
+      'id, first_name, last_name, employment_type, stage, is_active, ' +
+      'next_meeting_at:progress_notes!employees_id_fkey(next_meeting_at), ' +
+      'departments:department_id(name), coordinator:coordinator_id'
+    )
     .eq('tenant_id', tenant.id)
     .limit(200)
 
@@ -30,16 +38,20 @@ export default async function EmployeesPage() {
             </tr>
           </thead>
           <tbody>
-            {(data||[]).map((e:any)=> (
+            {(data || []).map((e: any) => (
               <tr key={e.id} className="border-t hover:bg-slate-50">
-                <td className="p-2"><Link className="text-blue-700 hover:underline" href={`/employees/${e.id}`}>{e.first_name} {e.last_name}</Link></td>
+                <td className="p-2">
+                  <Link className="text-blue-700 hover:underline" href={`/employees/${e.id}`}>
+                    {e.first_name} {e.last_name}
+                  </Link>
+                </td>
                 <td className="p-2">{e.departments?.name || '—'}</td>
                 <td className="p-2">{e.employment_type}</td>
                 <td className="p-2">{e.stage}</td>
                 <td className="p-2">{e.coordinator || '—'}</td>
-                <td className="p-2">{/* last engagement date to be populated via view or join */}—</td>
+                <td className="p-2">—</td>
                 <td className="p-2">{e.next_meeting_at ? new Date(e.next_meeting_at).toLocaleString() : '—'}</td>
-                <td className="p-2">{/* open tasks count via view */}—</td>
+                <td className="p-2">—</td>
                 <td className="p-2">{e.is_active ? 'Active' : 'Inactive'}</td>
               </tr>
             ))}
