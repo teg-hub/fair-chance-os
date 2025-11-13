@@ -9,8 +9,8 @@ export function supabaseServer() {
   return createServerClient<Database, 'app'>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    // @supabase/ssr options don't expose db.schema in types; cast to any is fine.
-    { cookies: { get: (name) => c.get(name)?.value } } as any
+    // Type the cookie callback param to satisfy TS
+    { cookies: { get: (name: string) => c.get(name)?.value } } as any
   )
 }
 
