@@ -50,7 +50,9 @@ export default async function EmployeesPage() {
                 <td className="p-2">{e.stage}</td>
                 <td className="p-2">{e.coordinator || '—'}</td>
                 <td className="p-2">—</td>
-                <td className="p-2">{e.next_meeting_at ? new Date(e.next_meeting_at).toLocaleString() : '—'}</td>
+                <td className="p-2">
+                  {e.next_meeting_at ? new Date(e.next_meeting_at).toLocaleString() : '—'}
+                </td>
                 <td className="p-2">—</td>
                 <td className="p-2">{e.is_active ? 'Active' : 'Inactive'}</td>
               </tr>
