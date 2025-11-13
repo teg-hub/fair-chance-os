@@ -1,13 +1,12 @@
 import { supabaseServer } from '@/lib/supabase'
 import { getTenant } from '@/lib/tenant'
 import { Card } from '@/components/ui/card'
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
+import BarTile from '@/components/dashboard/BarTile'
 
 export default async function DashboardPage() {
   const tenant = await getTenant()
   if (!tenant) return <div className="text-sm">No tenant resolved. Use tenant subdomain.</div>
 
-  // Loosen types to avoid view-generic inference errors during setup
   const sb: any = supabaseServer()
 
   const { data: util } = await sb
@@ -34,6 +33,10 @@ export default async function DashboardPage() {
     .eq('tenant_id', tenant.id)
     .order('engagements', { ascending: false })
 
+  const emData = (em || []).map((x: any) => ({ x: x.month?.slice(0, 10), y: x.engagements }))
+  const byDeptData = (byDept || []).map((x: any) => ({ x: x.department || 'Unassigned', y: x.engagements }))
+  const byAonData = (byAon || []).map((x: any) => ({ x: x.area_of_need, y: x.engagements }))
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card className="p-4">
@@ -48,44 +51,17 @@ export default async function DashboardPage() {
 
       <Card className="p-4 col-span-2 lg:col-span-1">
         <div className="text-xs text-slate-500">Engagements Over Time</div>
-        <div className="h-36">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={(em || []).map((x: any) => ({ x: x.month?.slice(0, 10), y: x.engagements }))}>
-              <XAxis dataKey="x" hide />
-              <YAxis hide />
-              <Tooltip />
-              <Bar dataKey="y" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <BarTile data={emData} />
       </Card>
 
       <Card className="p-4">
         <div className="text-xs text-slate-500">Engagements by Department</div>
-        <div className="h-36">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={(byDept || []).map((x: any) => ({ x: x.department || 'Unassigned', y: x.engagements }))}>
-              <XAxis dataKey="x" hide />
-              <YAxis hide />
-              <Tooltip />
-              <Bar dataKey="y" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <BarTile data={byDeptData} />
       </Card>
 
       <Card className="p-4">
         <div className="text-xs text-slate-500">Engagements by Area of Need</div>
-        <div className="h-36">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={(byAon || []).map((x: any) => ({ x: x.area_of_need, y: x.engagements }))}>
-              <XAxis dataKey="x" hide />
-              <YAxis hide />
-              <Tooltip />
-              <Bar dataKey="y" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <BarTile data={byAonData} />
       </Card>
     </div>
   )
