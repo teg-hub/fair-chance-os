@@ -1,6 +1,7 @@
+'use server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
-import type { Database } from './types'
+import { Database } from './types'
 
 export type Tenant = { id: string; name: string; subdomain: string }
 
@@ -9,10 +10,10 @@ export async function getTenant() {
   const sub = cookieStore.get('tenant_subdomain')?.value
   if (!sub) return null
 
-  const supabase = createServerClient<Database, 'app'>(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } } as any
+    { cookies: { get: (name: string) => cookieStore.get(name)?.value } }
   )
 
   const { data, error } = await supabase
