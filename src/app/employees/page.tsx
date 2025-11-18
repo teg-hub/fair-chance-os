@@ -1,14 +1,8 @@
 import { supabaseServer } from '@/lib/supabase'
-import { getTenant } from '@/lib/tenant'
 import Link from 'next/link'
 
 export default async function EmployeesPage() {
-  const tenant = await getTenant()
-  if (!tenant) return null
-
-  // Loosen types to avoid inference issues during setup
   const sb: any = supabaseServer()
-
   const { data } = await sb
     .from('employees')
     .select(
@@ -16,7 +10,6 @@ export default async function EmployeesPage() {
       'next_meeting_at:progress_notes!employees_id_fkey(next_meeting_at), ' +
       'departments:department_id(name), coordinator:coordinator_id'
     )
-    .eq('tenant_id', tenant.id)
     .limit(200)
 
   return (
@@ -50,9 +43,7 @@ export default async function EmployeesPage() {
                 <td className="p-2">{e.stage}</td>
                 <td className="p-2">{e.coordinator || '—'}</td>
                 <td className="p-2">—</td>
-                <td className="p-2">
-                  {e.next_meeting_at ? new Date(e.next_meeting_at).toLocaleString() : '—'}
-                </td>
+                <td className="p-2">{e.next_meeting_at ? new Date(e.next_meeting_at).toLocaleString() : '—'}</td>
                 <td className="p-2">—</td>
                 <td className="p-2">{e.is_active ? 'Active' : 'Inactive'}</td>
               </tr>
