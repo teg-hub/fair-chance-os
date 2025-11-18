@@ -1,21 +1,18 @@
 import { supabaseServer } from '@/lib/supabase'
-import { getTenant } from '@/lib/tenant'
 import { Card } from '@/components/ui/card'
 import BarTile from '@/components/dashboard/BarTile'
 
 export default async function DashboardPage() {
-  const tenant = await getTenant()
-  if (!tenant) return <div className="text-sm">No tenant resolved. Use <code>?tenant=pilot</code> once on this domain or visit <code>/t/pilot</code>.</div>
-
   const sb: any = supabaseServer()
+
+  // No tenant filter in single-tenant mode
   let util: any = null, em: any[] = [], byDept: any[] = [], byAon: any[] = []
+  try { ({ data: util } = await sb.from('v_utilization_overall').select('*').maybeSingle()) } catch {}
+  try { ({ data: em }   = await sb.from('v_engagements_monthly').select('*').order('month')) } catch {}
+  try { ({ data: byDept } = await sb.from('v_engagements_by_department').select('*').order('engagements', { ascending: false })) } catch {}
+  try { ({ data: byAon }  = await sb.from('v_engagements_by_aon').select('*').order('engagements', { ascending: false })) } catch {}
 
-  try { ({ data: util } = await sb.from('v_utilization_overall').select('*').eq('tenant_id', tenant.id).maybeSingle()) } catch {}
-  try { ({ data: em }   = await sb.from('v_engagements_monthly').select('*').eq('tenant_id', tenant.id).order('month')) } catch {}
-  try { ({ data: byDept } = await sb.from('v_engagements_by_department').select('*').eq('tenant_id', tenant.id).order('engagements', { ascending: false })) } catch {}
-  try { ({ data: byAon }  = await sb.from('v_engagements_by_aon').select('*').eq('tenant_id', tenant.id).order('engagements', { ascending: false })) } catch {}
-
-  const emData     = (em || []).map((x: any) => ({ x: x.month?.slice(0, 10), y: x.engagements }))
+  const emData     = (em || []).map((x: any) => ({ x: x.month?.slice(0,10), y: x.engagements }))
   const byDeptData = (byDept || []).map((x: any) => ({ x: x.department || 'Unassigned', y: x.engagements }))
   const byAonData  = (byAon || []).map((x: any) => ({ x: x.area_of_need, y: x.engagements }))
 
