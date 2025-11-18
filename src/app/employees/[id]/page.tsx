@@ -1,22 +1,10 @@
 import { supabaseServer } from '@/lib/supabase'
-import { getTenant } from '@/lib/tenant'
 
 export default async function EmployeeDetail({ params }: { params: { id: string } }) {
-  const tenant = await getTenant()
-  if (!tenant) return null
-
-  // Loosen types to avoid inference issues during setup
   const sb: any = supabaseServer()
-
   const [{ data: emp }, { data: notes }] = await Promise.all([
-    sb.from('employees').select('*')
-      .eq('tenant_id', tenant.id)
-      .eq('id', params.id)
-      .maybeSingle(),
-    sb.from('progress_notes').select('*')
-      .eq('tenant_id', tenant.id)
-      .eq('employee_id', params.id)
-      .order('note_date', { ascending: false })
+    sb.from('employees').select('*').eq('id', params.id).maybeSingle(),
+    sb.from('progress_notes').select('*').eq('employee_id', params.id).order('note_date', { ascending: false })
   ])
 
   if (!emp) return <div>Not found</div>
