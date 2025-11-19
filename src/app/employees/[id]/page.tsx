@@ -1,4 +1,4 @@
-import { createSbServer } from '@/lib/supabase'
+import { createSbServer } from '@/lib/supabase-server'
 import NewNote from './new-note'
 export default async function EmployeeDetail({ params }: { params: { id: string } }){
   const sb = createSbServer()
