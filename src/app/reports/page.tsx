@@ -1,4 +1,4 @@
-import { createSbServer } from '@/lib/supabase'
+import { createSbServer } from '@/lib/supabase-server'
 export const dynamic = 'force-dynamic'
 export default async function Reports(){
   const sb = createSbServer()
