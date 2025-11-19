@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { createSbServer } from '@/lib/supabase'
+import { createSbServer } from '@/lib/supabase-server'
 export default async function EmployeesPage(){
   const sb = createSbServer()
   const { data } = await sb.from('employees').select('id,name,department,employment_type').order('name')
