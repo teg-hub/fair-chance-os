@@ -1,4 +1,4 @@
-import { createSbServer } from '@/lib/supabase'
+import { createSbServer } from '@/lib/supabase-server'
 export default async function Dashboard(){
   const sb = createSbServer()
   const { data: util } = await sb.from('kpi_program_utilization').select('*').order('period_month',{ascending:false}).limit(6)
