@@ -3,8 +3,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 type InputRow = { week_start: string; coordinator_id: string | null; notes_this_week: number }
 
-// Allow dynamic series keys like row['<coordinator-id>']
-type ChartRow = { week: string } & Record<string, number>
+/** Row type for Recharts: `week` stays string, all dynamic series keys are number */
+type ChartRow = { week: string; [seriesKey: string]: number | string }
 
 export function EngagementTrend({ rows }: { rows: InputRow[] }) {
   const wk = (d: string) => new Date(d).toISOString().slice(0, 10)
@@ -27,14 +27,14 @@ export function EngagementTrend({ rows }: { rows: InputRow[] }) {
       map[p.week] = (map[p.week] || 0) + p.value
     })
     combined.forEach((row) => {
-      row[id] = map[row.week] || 0
+      row[id] = map[row.week as string] || 0
     })
   })
 
   return (
     <div style={{ width: '100%', height: 320 }}>
       <ResponsiveContainer>
-        <LineChart data={combined}>
+        <LineChart data={combined as any[]}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="week" />
           <YAxis />
