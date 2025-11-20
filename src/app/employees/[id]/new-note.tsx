@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { createSbBrowser } from '@/lib/supabase'
+import { createSbServer } from '@/lib/supabase-server'
 const AREAS = ['Food','Clothing','Housing','Financial','Mental Health','Transportation','Legal','Education','Other','Prefer Not To Share']
 const LOCS = ['Office','Newberry','Garage','Community','Phone','Video','Text','Email']
 export default function NewNote({ employeeId }:{ employeeId:string }){
