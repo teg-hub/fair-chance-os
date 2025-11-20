@@ -60,18 +60,19 @@ export default async function Page({
   if (end) needsQuery   = needsQuery.lte('period_month', end)
   const { data: needs } = await needsQuery
 
-  // Weekly Engagement (by coordinator)
-  let engageQuery = sb
-    .from('kpi_engagements_weekly')
-    .select('week_start, coordinator_id, employee_id, notes_this_week')
-    .order('week_start', { ascending: true })
-    .limit(1000)
-  // NOTE: If you add department to this view later, enable dept filter here:
-  // if (dept) engageQuery = engageQuery.eq('department', dept)
-  if (coord) engageQuery = engageQuery.eq('coordinator_id', coord)
-  if (start) engageQuery = engageQuery.gte('week_start', start)
-  if (end) engageQuery   = engageQuery.lte('week_start', end)
-  const { data: engage } = await engageQuery
+  // Weekly Engagement (by coordinator) — UPDATED
+let engageQuery = sb
+  .from('kpi_engagements_weekly')
+  .select('week_start, department, coordinator_id, employee_id, notes_this_week') // department added
+  .order('week_start', { ascending: true })
+  .limit(1000)
+
+if (dept) engageQuery = engageQuery.eq('department', dept)  // NEW: dept filter now active
+if (coord) engageQuery = engageQuery.eq('coordinator_id', coord)
+if (start) engageQuery = engageQuery.gte('week_start', start)
+if (end)   engageQuery = engageQuery.lte('week_start', end)
+
+const { data: engage } = await engageQuery
 
   // Recent notes (filtered)
   let recentQuery = sb
