@@ -4,34 +4,32 @@ import QueryFilters from '@/components/filters/QueryFilters'
 const DEPARTMENTS = ['Office','Garage','Operations','Events']
 const AREAS = ['Food','Clothing','Housing','Financial','Mental Health','Transportation','Legal','Education','Other','Prefer Not To Share']
 
-type Search = {
-  dept?: string | string[]
-  coord?: string | string[]
-  start?: string | string[]
-  end?: string | string[]
-  need?: string | string[]
-}
-
 function first(q: string | string[] | undefined) {
   if (!q) return ''
   return Array.isArray(q) ? (q[0] ?? '') : q
 }
 
-export default async function NotesPage({ searchParams }: { searchParams: Search }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined }
+}) {
   const sb = createSbServer()
 
-  const dept = first(searchParams.dept)
-  const coord = first(searchParams.coord)
-  const need  = first(searchParams.need)
-  const start = first(searchParams.start) // date column is 'date' here, not timestamp
-  const end   = first(searchParams.end)
+  const sp = searchParams ?? {}
+  const dept = first(sp.dept)
+  const coord = first(sp.coord)
+  const need  = first(sp.need)
+  const start = first(sp.start) // DATE column, not timestamp
+  const end   = first(sp.end)
 
-  // options for Coordinator select
+  // Coordinator options
   const { data: coordOpts } = await sb
     .from('coordinators')
     .select('id, full_name')
     .order('full_name', { ascending: true })
 
+  // Query with filters
   let q = sb
     .from('progress_notes')
     .select('id, note_date, meeting_location, areas_of_need, department, coordinator_id, meeting_summary')
