@@ -44,7 +44,7 @@ on conflict (id) do nothing;`}
               <div>
                 <div className="font-medium">{e.name}</div>
                 <div className="text-sm text-slate-600">
-                  {e.department} • {e.employment_type} • {e.phone_number}
+                  {e.department} • {e.employment_type} • {e.number}
                 </div>
               </div>
               <div className="flex gap-2">
