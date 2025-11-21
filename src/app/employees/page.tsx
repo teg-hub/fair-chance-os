@@ -7,7 +7,7 @@ export default async function EmployeesPage() {
   const sb = createSbServer()
   const { data, error } = await sb
     .from('employees')
-    .select('id, name, phone_number, department, employment_type')
+    .select('id, name, number, department, employment_type')
     .order('name', { ascending: true })
 
   if (error) {
