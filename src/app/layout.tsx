@@ -7,11 +7,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen">
         <div className="max-w-7xl mx-auto p-6">
           <header className="mb-6">
-            <h1 className="text-2xl font-bold text-blue-800">FairChance Program</h1>
+            <h1 className="text-2xl font-bold text-blue-800">FairChance OS</h1>
             <nav className="mt-2 flex gap-4 text-blue-700">
               <a href="/">Dashboard</a>
               <a href="/employees">Employees</a>
-              <a href="/notes">Notes</a> {/* NEW link */}
+              <a href="/notes">Notes</a>
+              <a href="/notes/new">New Note</a> {/* NEW */}
               <a href="/coordinators">Coordinator Analytics</a>
               <a href="/reports">Reports</a>
             </nav>
