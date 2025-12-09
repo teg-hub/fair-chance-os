@@ -32,7 +32,7 @@ export default async function EmployeesPage() {
         <div className="card">
           <p className="text-sm text-slate-700">No employees found. Try the seed below and refresh:</p>
           <pre className="text-xs bg-blue-50 p-3 rounded mt-2 overflow-auto">
-{`insert into public.employees (id, name, phone, department, employment_type)
+{`insert into public.employees (id, name, phone_number, department, employment_type)
 values ('00000000-0000-4000-8000-000000000001','Alex Johnson','513-555-0100','Office','Full Time')
 on conflict (id) do nothing;`}
           </pre>
