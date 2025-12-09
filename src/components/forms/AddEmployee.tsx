@@ -12,12 +12,24 @@ export default function AddEmployee() {
 
   async function onSubmit(f: FormData) {
     setBusy(true); setErr(null)
-    const name = (f.get('name') as string)?.trim()
+
+    const first_name = (f.get('first_name') as string)?.trim()
+    const last_name  = (f.get('last_name')  as string)?.trim()
     const phone_number = (f.get('phone_number') as string)?.trim()
     const department = f.get('department') as string
     const employment_type = f.get('employment_type') as string
-    if (!name || !department || !employment_type) { setErr('Name, Department, and Employment Type are required.'); setBusy(false); return }
-    const { error } = await sb.from('employees').insert({ name, phone_number, department, employment_type })
+
+    if (!first_name || !last_name || !department || !employment_type) {
+      setErr('First, Last, Department, and Employment Type are required.')
+      setBusy(false); return
+    }
+
+    const name = `${first_name} ${last_name}`.replace(/\s+/g,' ').trim() // keep legacy "name" in sync
+
+    const { error } = await sb.from('employees').insert({
+      first_name, last_name, name, phone_number, department, employment_type
+    })
+
     setBusy(false)
     if (error) setErr(error.message); else window.location.reload()
   }
@@ -29,18 +41,24 @@ export default function AddEmployee() {
         {busy && <span className="text-sm text-slate-600">Saving…</span>}
       </div>
       {err && <div className="text-sm text-red-700">{err}</div>}
+
       <div className="grid md:grid-cols-4 gap-2">
-        <input name="name" placeholder="Full name*" className="border rounded p-2" />
+        <input name="first_name" placeholder="First name*" className="border rounded p-2" />
+        <input name="last_name"  placeholder="Last name*"  className="border rounded p-2" />
         <input name="phone_number" placeholder="Phone" className="border rounded p-2" />
         <select name="department" defaultValue="" className="border rounded p-2">
           <option value="" disabled>Department*</option>
           {DEPTS.map(d => <option key={d} value={d}>{d}</option>)}
         </select>
+      </div>
+
+      <div className="grid md:grid-cols-4 gap-2">
         <select name="employment_type" defaultValue="" className="border rounded p-2">
           <option value="" disabled>Employment Type*</option>
           {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
+
       <button className="btn" disabled={busy}>Add</button>
     </form>
   )
