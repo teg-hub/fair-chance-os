@@ -1,11 +1,11 @@
 import { createSbServer } from '@/lib/supabase-server'
-import EditNoteSummary from '@/components/forms/EditNoteSummary'
+import EditProgressNoteForm from '@/components/forms/EditProgressNoteForm'
 
 export default async function NoteEdit({ params }: { params: { id: string } }) {
   const sb = createSbServer()
   const { data: note, error } = await sb
     .from('progress_notes')
-    .select('id, note_date, meeting_location, meeting_summary')
+    .select('id, employee_id, note_date, meeting_location, areas_of_need, employee_report, coordinator_observations, short_term_goals, long_term_goals, referrals, next_meeting_at, next_meeting_location, meeting_summary, file_url')
     .eq('id', params.id)
     .single()
 
@@ -15,12 +15,7 @@ export default async function NoteEdit({ params }: { params: { id: string } }) {
 
   return (
     <div className="space-y-4">
-      <EditNoteSummary
-        id={note.id}
-        note_date={note.note_date as string}
-        meeting_location={note.meeting_location as string}
-        meeting_summary={note.meeting_summary as string | null}
-      />
+      <EditProgressNoteForm note={note as any} />
     </div>
   )
 }
