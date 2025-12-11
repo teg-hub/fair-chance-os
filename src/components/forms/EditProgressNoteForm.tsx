@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { createSbBrowser } from '@/lib/supabase-browser'
 
 const AREAS = [
@@ -40,6 +40,14 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
   const [removeFile, setRemoveFile] = useState(false)
+
+  // ✅ NEW: success toast state
+  const [success, setSuccess] = useState(false)
+  useEffect(() => {
+    if (!success) return
+    const t = setTimeout(() => setSuccess(false), 3000) // auto-hide after 3s
+    return () => clearTimeout(t)
+  }, [success])
 
   function toggleArea(a: string) {
     setAreas(s => s.includes(a) ? s.filter(x => x !== a) : [...s, a])
@@ -81,125 +89,146 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
 
     const { error } = await sb.from('progress_notes').update(payload).eq('id', note.id)
     setBusy(false)
-    if (error) setErrors([error.message]); else window.location.href = `/notes/${note.id}`
+    if (error) {
+      setErrors([error.message])
+    } else {
+      // ✅ NEW: show success toast, stay on page (no redirect)
+      setSuccess(true)
+    }
   }
 
   return (
-    <form action={async (f) => onSubmit(f)} className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-blue-800">Edit Progress Note</h1>
-        {busy && <span className="text-sm text-slate-600">Saving…</span>}
-      </div>
-
-      {errors.length > 0 && (
-        <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-          <ul className="list-disc ml-5">{errors.map((e,i)=><li key={i}>{e}</li>)}</ul>
+    <div className="relative">
+      {/* ✅ NEW: floating toast */}
+      {success && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 shadow">
+          Saved successfully
         </div>
       )}
 
-      <div className="card grid md:grid-cols-3 gap-3">
-        <label className="text-sm grid gap-1">
-          <span>Date <span aria-hidden className="text-red-600">*</span></span>
-          <input name="note_date" type="date" required defaultValue={note.note_date ?? ''} className="w-full border rounded p-2" />
-        </label>
-
-        <label className="text-sm grid gap-1">
-          <span>Meeting Location <span aria-hidden className="text-red-600">*</span></span>
-          <select name="meeting_location" required defaultValue={note.meeting_location ?? ''} className="w-full border rounded p-2">
-            <option value="" disabled>Choose…</option>
-            {LOCS.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
-        </label>
-
-        <label className="text-sm grid gap-1">
-          <span>Next Meeting Date & Time</span>
-          <input name="next_meeting_at" type="datetime-local" defaultValue={toLocalDatetimeInput(note.next_meeting_at)} className="w-full border rounded p-2" />
-        </label>
-
-        <label className="text-sm grid gap-1 md:col-span-3">
-          <span>Next Meeting Location</span>
-          <select name="next_meeting_location" defaultValue={note.next_meeting_location ?? ''} className="w-full border rounded p-2">
-            <option value="">—</option>
-            {LOCS.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
-        </label>
-      </div>
-
-      <div className="card">
-        <div className="text-sm font-medium mb-2">Areas of Need</div>
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Areas of Need">
-          {AREAS.map(a => (
-            <button
-              key={a}
-              type="button"
-              onClick={()=>toggleArea(a)}
-              aria-pressed={areas.includes(a)}
-              className={`px-3 py-1 rounded-full border transition ${areas.includes(a)?'bg-blue-600 text-white':'bg-blue-50 text-blue-800 hover:bg-blue-100'}`}
-            >
-              {a}
-            </button>
-          ))}
+      <form action={async (f) => onSubmit(f)} className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-blue-800">Edit Progress Note</h1>
+          {busy && <span className="text-sm text-slate-600">Saving…</span>}
         </div>
-      </div>
 
-      <div className="grid md:grid-cols-2 gap-3">
-        <label className="card text-sm grid gap-1">
-          <span>Employee’s Report</span>
-          <textarea name="employee_report" rows={5} defaultValue={note.employee_report ?? ''} className="w-full border rounded p-2" />
-        </label>
-        <label className="card text-sm grid gap-1">
-          <span>Coordinator Observations & Additional Insights</span>
-          <textarea name="coordinator_observations" rows={5} defaultValue={note.coordinator_observations ?? ''} className="w-full border rounded p-2" />
-        </label>
-      </div>
+        {errors.length > 0 && (
+          <div className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <ul className="list-disc ml-5">{errors.map((e,i)=><li key={i}>{e}</li>)}</ul>
+          </div>
+        )}
 
-      <div className="grid md:grid-cols-2 gap-3">
-        <label className="card text-sm grid gap-1">
-          <span>Short-Term Goals</span>
-          <input name="short_term_goals" defaultValue={note.short_term_goals ?? ''} className="w-full border rounded p-2" />
-        </label>
-        <label className="card text-sm grid gap-1">
-          <span>Long-Term Goals</span>
-          <input name="long_term_goals" defaultValue={note.long_term_goals ?? ''} className="w-full border rounded p-2" />
-        </label>
-      </div>
+        {/* Row 1: Date / Location / Next Meeting */}
+        <div className="card grid md:grid-cols-3 gap-3">
+          <label className="text-sm grid gap-1">
+            <span>Date <span aria-hidden className="text-red-600">*</span></span>
+            <input name="note_date" type="date" required defaultValue={note.note_date ?? ''} className="w-full border rounded p-2" />
+          </label>
 
-      <label className="card text-sm grid gap-1">
-        <span>Referrals Made (if applicable)</span>
-        <input name="referrals" defaultValue={note.referrals ?? ''} className="w-full border rounded p-2" />
-      </label>
+          <label className="text-sm grid gap-1">
+            <span>Meeting Location <span aria-hidden className="text-red-600">*</span></span>
+            <select name="meeting_location" required defaultValue={note.meeting_location ?? ''} className="w-full border rounded p-2">
+              <option value="" disabled>Choose…</option>
+              {LOCS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </label>
 
-      <label className="card text-sm grid gap-1">
-        <span>Summary of Meeting <span aria-hidden className="text-red-600">*</span></span>
-        <textarea name="meeting_summary" required rows={5} defaultValue={note.meeting_summary ?? ''} className="w-full border rounded p-2" />
-      </label>
+          <label className="text-sm grid gap-1">
+            <span>Next Meeting Date & Time</span>
+            <input name="next_meeting_at" type="datetime-local" defaultValue={toLocalDatetimeInput(note.next_meeting_at)} className="w-full border rounded p-2" />
+          </label>
 
-      <div className="card grid md:grid-cols-2 gap-3 items-start">
-        <div className="text-sm">
-          <div className="mb-1">Attachment</div>
-          {note.file_url ? (
-            <div className="flex items-center gap-3">
-              <a className="text-blue-700 underline" href={note.file_url} target="_blank">View current file</a>
-              <label className="inline-flex items-center gap-2 text-xs">
-                <input type="checkbox" onChange={e=>setRemoveFile(e.target.checked)} />
-                Remove existing file
-              </label>
-            </div>
-          ) : (
-            <div className="text-xs text-slate-600">No file attached.</div>
-          )}
+          <label className="text-sm grid gap-1 md:col-span-3">
+            <span>Next Meeting Location</span>
+            <select name="next_meeting_location" defaultValue={note.next_meeting_location ?? ''} className="w-full border rounded p-2">
+              <option value="">—</option>
+              {LOCS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </label>
         </div>
-        <label className="text-sm grid gap-1">
-          <span>Replace with new file (optional)</span>
-          <input name="file" type="file" className="w-full" />
-          <span className="text-xs text-slate-500">PDFs, images, docs. Stored in Supabase ‘documents’.</span>
-        </label>
-      </div>
 
-      <div className="flex gap-2">
-        <button className="btn" disabled={busy} aria-disabled={busy}>{busy?'Saving…':'Save Changes'}</button>
-        <a className="px-4 py-2 rounded-2xl border" href={`/notes/${note.id}`}>Cancel</a>
-      </div>
-    </form>
+        {/* Areas of Need */}
+        <div className="card">
+          <div className="text-sm font-medium mb-2">Areas of Need</div>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Areas of Need">
+            {AREAS.map(a => (
+              <button
+                key={a}
+                type="button"
+                onClick={()=>setAreas(s => s.includes(a) ? s.filter(x => x !== a) : [...s, a])}
+                aria-pressed={areas.includes(a)}
+                className={`px-3 py-1 rounded-full border transition ${areas.includes(a)?'bg-blue-600 text-white':'bg-blue-50 text-blue-800 hover:bg-blue-100'}`}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Narrative sections */}
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="card text-sm grid gap-1">
+            <span>Employee’s Report</span>
+            <textarea name="employee_report" rows={5} defaultValue={note.employee_report ?? ''} className="w-full border rounded p-2" />
+          </label>
+          <label className="card text-sm grid gap-1">
+            <span>Coordinator Observations & Additional Insights</span>
+            <textarea name="coordinator_observations" rows={5} defaultValue={note.coordinator_observations ?? ''} className="w-full border rounded p-2" />
+          </label>
+        </div>
+
+        {/* Goals */}
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="card text-sm grid gap-1">
+            <span>Short-Term Goals</span>
+            <input name="short_term_goals" defaultValue={note.short_term_goals ?? ''} className="w-full border rounded p-2" />
+          </label>
+          <label className="card text-sm grid gap-1">
+            <span>Long-Term Goals</span>
+            <input name="long_term_goals" defaultValue={note.long_term_goals ?? ''} className="w-full border rounded p-2" />
+          </label>
+        </div>
+
+        {/* Referrals */}
+        <label className="card text-sm grid gap-1">
+          <span>Referrals Made (if applicable)</span>
+          <input name="referrals" defaultValue={note.referrals ?? ''} className="w-full border rounded p-2" />
+        </label>
+
+        {/* Summary */}
+        <label className="card text-sm grid gap-1">
+          <span>Summary of Meeting <span aria-hidden className="text-red-600">*</span></span>
+          <textarea name="meeting_summary" required rows={5} defaultValue={note.meeting_summary ?? ''} className="w-full border rounded p-2" />
+        </label>
+
+        {/* File */}
+        <div className="card grid md:grid-cols-2 gap-3 items-start">
+          <div className="text-sm">
+            <div className="mb-1">Attachment</div>
+            {note.file_url ? (
+              <div className="flex items-center gap-3">
+                <a className="text-blue-700 underline" href={note.file_url} target="_blank">View current file</a>
+                <label className="inline-flex items-center gap-2 text-xs">
+                  <input type="checkbox" onChange={e=>setRemoveFile(e.target.checked)} />
+                  Remove existing file
+                </label>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-600">No file attached.</div>
+            )}
+          </div>
+          <label className="text-sm grid gap-1">
+            <span>Replace with new file (optional)</span>
+            <input name="file" type="file" className="w-full" />
+            <span className="text-xs text-slate-500">PDFs, images, docs. Stored in Supabase ‘documents’.</span>
+          </label>
+        </div>
+
+        <div className="flex gap-2">
+          <button className="btn" disabled={busy} aria-disabled={busy}>{busy?'Saving…':'Save Changes'}</button>
+          <a className="px-4 py-2 rounded-2xl border" href={`/notes/${note.id}`}>Cancel</a>
+        </div>
+      </form>
+    </div>
   )
 }
