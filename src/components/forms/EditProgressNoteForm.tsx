@@ -13,7 +13,7 @@ const LOCS = ['Office','Newberry','Garage','Community','Phone','Video','Text','E
 type Note = {
   id: string
   employee_id: string
-  note_date: string | null       // DATE (YYYY-MM-DD)
+  note_date: string | null
   meeting_location: string | null
   areas_of_need: string[] | null
   employee_report: string | null
@@ -21,7 +21,7 @@ type Note = {
   short_term_goals: string | null
   long_term_goals: string | null
   referrals: string | null
-  next_meeting_at: string | null // TIMESTAMP
+  next_meeting_at: string | null
   next_meeting_location: string | null
   meeting_summary: string | null
   file_url: string | null
@@ -30,7 +30,6 @@ type Note = {
 function toLocalDatetimeInput(ts: string | null) {
   if (!ts) return ''
   const d = new Date(ts)
-  // yyyy-MM-ddThh:mm (no seconds)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
@@ -63,14 +62,12 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
       areas_of_need: areas,
     }
 
-    // Requireds
     const errs: string[] = []
     if (!payload.note_date) errs.push('Date is required.')
     if (!payload.meeting_location) errs.push('Meeting location is required.')
     if (!payload.meeting_summary) errs.push('Summary of Meeting is required.')
     if (errs.length) { setErrors(errs); setBusy(false); return }
 
-    // File handling
     let file_url = note.file_url
     const file = form.get('file') as File | null
     if (removeFile) file_url = null
@@ -100,7 +97,6 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
         </div>
       )}
 
-      {/* Row 1: Date / Location / Next Meeting */}
       <div className="card grid md:grid-cols-3 gap-3">
         <label className="text-sm grid gap-1">
           <span>Date <span aria-hidden className="text-red-600">*</span></span>
@@ -129,7 +125,6 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
         </label>
       </div>
 
-      {/* Areas of Need */}
       <div className="card">
         <div className="text-sm font-medium mb-2">Areas of Need</div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Areas of Need">
@@ -147,7 +142,6 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
         </div>
       </div>
 
-      {/* Narrative sections */}
       <div className="grid md:grid-cols-2 gap-3">
         <label className="card text-sm grid gap-1">
           <span>Employee’s Report</span>
@@ -159,7 +153,6 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
         </label>
       </div>
 
-      {/* Goals */}
       <div className="grid md:grid-cols-2 gap-3">
         <label className="card text-sm grid gap-1">
           <span>Short-Term Goals</span>
@@ -171,19 +164,16 @@ export default function EditProgressNoteForm({ note }: { note: Note }) {
         </label>
       </div>
 
-      {/* Referrals */}
       <label className="card text-sm grid gap-1">
         <span>Referrals Made (if applicable)</span>
         <input name="referrals" defaultValue={note.referrals ?? ''} className="w-full border rounded p-2" />
       </label>
 
-      {/* Summary of Meeting */}
       <label className="card text-sm grid gap-1">
         <span>Summary of Meeting <span aria-hidden className="text-red-600">*</span></span>
         <textarea name="meeting_summary" required rows={5} defaultValue={note.meeting_summary ?? ''} className="w-full border rounded p-2" />
       </label>
 
-      {/* File */}
       <div className="card grid md:grid-cols-2 gap-3 items-start">
         <div className="text-sm">
           <div className="mb-1">Attachment</div>
