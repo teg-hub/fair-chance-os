@@ -27,6 +27,7 @@ export default async function Page({
   const { data: coordOpts } = await sb
     .from('coordinators')
     .select('id, full_name')
+
   // Notes + employee join (adds name on card)
   let q = sb
     .from('progress_notes')
@@ -63,12 +64,13 @@ export default async function Page({
       <div className="grid gap-3">
         {rows.map((n:any) => (
           <div key={n.id} className="card">
-            <div className="flex items-center justify-between text-sm text-slate-600">
+            {/* Header (left aligned): Date/Location, then Employee name BELOW */}
+            <div className="text-sm text-slate-600">
               <div>
                 {new Date(n.note_date).toLocaleDateString()} • {n.meeting_location}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-slate-500">Employee:</span>
+              <div className="mt-1">
+                <span className="text-slate-500 mr-1">Employee:</span>
                 {n.employee_id ? (
                   <a className="underline text-blue-700" href={`/employees/${n.employee_id}`}>{n.employee_name}</a>
                 ) : (
