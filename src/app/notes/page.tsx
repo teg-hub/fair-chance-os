@@ -1,5 +1,6 @@
 import { createSbServer } from '@/lib/supabase-server'
 import QueryFilters from '@/components/filters/QueryFilters'
+import NoteCardActions from '@/components/notes/NoteCardActions'
 
 const DEPARTMENTS = ['Office','Garage','Operations','Events']
 const AREAS = ['Food','Clothing','Housing','Financial','Mental Health','Transportation','Legal','Education','Other','Prefer Not To Share']
@@ -23,12 +24,10 @@ export default async function Page({
   const start = first(sp.start) // DATE column
   const end   = first(sp.end)
 
-  // Coordinator options for filter dropdown
   const { data: coordOpts } = await sb
     .from('coordinators')
     .select('id, full_name')
 
-  // Notes + employee join (adds name on card)
   let q = sb
     .from('progress_notes')
     .select(`
@@ -64,19 +63,20 @@ export default async function Page({
       <div className="grid gap-3">
         {rows.map((n:any) => (
           <div key={n.id} className="card">
-            {/* Header (left aligned): Date/Location, then Employee name BELOW */}
-            <div className="text-sm text-slate-600">
-              <div>
-                {new Date(n.note_date).toLocaleDateString()} • {n.meeting_location}
+            {/* Top row: left (date/location + employee) | right (kebab) */}
+            <div className="flex items-start justify-between">
+              <div className="text-sm text-slate-600">
+                <div>{new Date(n.note_date).toLocaleDateString()} • {n.meeting_location}</div>
+                <div className="mt-1">
+                  <span className="text-slate-500 mr-1">Employee:</span>
+                  {n.employee_id ? (
+                    <a className="underline text-blue-700" href={`/employees/${n.employee_id}`}>{n.employee_name}</a>
+                  ) : (
+                    <span>{n.employee_name}</span>
+                  )}
+                </div>
               </div>
-              <div className="mt-1">
-                <span className="text-slate-500 mr-1">Employee:</span>
-                {n.employee_id ? (
-                  <a className="underline text-blue-700" href={`/employees/${n.employee_id}`}>{n.employee_name}</a>
-                ) : (
-                  <span>{n.employee_name}</span>
-                )}
-              </div>
+              <NoteCardActions id={n.id} />
             </div>
 
             <div className="flex flex-wrap gap-2 my-2">
@@ -84,11 +84,6 @@ export default async function Page({
             </div>
 
             <p className="text-sm whitespace-pre-wrap">{n.meeting_summary}</p>
-
-            <div className="mt-3 flex gap-2">
-              <a className="btn" href={`/notes/${n.id}`}>View</a>
-              <a className="btn" href={`/notes/${n.id}/edit`}>Edit</a>
-            </div>
           </div>
         ))}
       </div>
