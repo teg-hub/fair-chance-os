@@ -3,6 +3,8 @@ import { UtilizationBar } from '@/components/charts/UtilizationBar'
 import { AreasStacked } from '@/components/charts/AreasStacked'
 import { EngagementTrend } from '@/components/charts/EngagementTrend'
 import QueryFilters from '@/components/filters/QueryFilters'
+import CoordinatorSelect from '@/components/filters/CoordinatorSelect'
+
 
 const DEPARTMENTS = ['Office','Garage','Operations','Events']
 const AREAS = ['Food','Clothing','Housing','Financial','Mental Health','Transportation','Legal','Education','Other','Prefer Not To Share']
@@ -89,6 +91,11 @@ const { data: engage } = await engageQuery
   const { data: recentNotes } = await recentQuery
 
   return (
+    <div className="flex items-center justify-between">
+  <h1 className="text-2xl font-semibold text-blue-800">Dashboard</h1>
+  <CoordinatorSelect options={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name })) as any} />
+</div>
+
     <div className="space-y-6">
       {/* Filters */}
       <QueryFilters
