@@ -1,10 +1,10 @@
+// src/app/page.tsx
 import { createSbServer } from '@/lib/supabase-server'
 import { UtilizationBar } from '@/components/charts/UtilizationBar'
 import { AreasStacked } from '@/components/charts/AreasStacked'
 import { EngagementTrend } from '@/components/charts/EngagementTrend'
 import QueryFilters from '@/components/filters/QueryFilters'
 import CoordinatorSelect from '@/components/filters/CoordinatorSelect'
-
 
 const DEPARTMENTS = ['Office','Garage','Operations','Events']
 const AREAS = ['Food','Clothing','Housing','Financial','Mental Health','Transportation','Legal','Education','Other','Prefer Not To Share']
@@ -62,19 +62,17 @@ export default async function Page({
   if (end) needsQuery   = needsQuery.lte('period_month', end)
   const { data: needs } = await needsQuery
 
-  // Weekly Engagement (by coordinator) — UPDATED
-let engageQuery = sb
-  .from('kpi_engagements_weekly')
-  .select('week_start, department, coordinator_id, employee_id, notes_this_week') // department added
-  .order('week_start', { ascending: true })
-  .limit(1000)
-
-if (dept) engageQuery = engageQuery.eq('department', dept)  // NEW: dept filter now active
-if (coord) engageQuery = engageQuery.eq('coordinator_id', coord)
-if (start) engageQuery = engageQuery.gte('week_start', start)
-if (end)   engageQuery = engageQuery.lte('week_start', end)
-
-const { data: engage } = await engageQuery
+  // Weekly Engagement (by coordinator)
+  let engageQuery = sb
+    .from('kpi_engagements_weekly')
+    .select('week_start, department, coordinator_id, employee_id, notes_this_week')
+    .order('week_start', { ascending: true })
+    .limit(1000)
+  if (dept) engageQuery = engageQuery.eq('department', dept)
+  if (coord) engageQuery = engageQuery.eq('coordinator_id', coord)
+  if (start) engageQuery = engageQuery.gte('week_start', start)
+  if (end)   engageQuery = engageQuery.lte('week_start', end)
+  const { data: engage } = await engageQuery
 
   // Recent notes (filtered)
   let recentQuery = sb
@@ -90,74 +88,75 @@ const { data: engage } = await engageQuery
   if (first(sp.end))   recentQuery = recentQuery.lte('note_date', first(sp.end)!)
   const { data: recentNotes } = await recentQuery
 
- return (
-  <div className="space-y-6">
-    {/* Header with Coordinator dropdown */}
-    <div className="flex items-center justify-between">
-      <h1 className="text-2xl font-semibold text-blue-800">Dashboard</h1>
-      <CoordinatorSelect
-        options={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name })) as any}
+  return (
+    <div className="space-y-6">
+      {/* Header with Coordinator dropdown */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-blue-800">Dashboard</h1>
+        <CoordinatorSelect
+          options={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name })) as any}
+        />
+      </div>
+
+      {/* Filters */}
+      <QueryFilters
+        departments={DEPARTMENTS}
+        coordinators={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name }))}
+        areas={AREAS}
       />
-    </div>
 
-    {/* Filters */}
-    <QueryFilters
-      departments={DEPARTMENTS}
-      coordinators={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name }))}
-      areas={AREAS}
-    />
+      {/* KPI tiles */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="card bg-blue-50">
+          <div className="text-sm text-slate-600">Program Utilization (rows)</div>
+          <div className="text-3xl font-semibold">{util?.length ?? 0}</div>
+        </div>
+        <div className="card bg-blue-50">
+          <div className="text-sm text-slate-600">Areas of Need (rows)</div>
+          <div className="text-3xl font-semibold">{needs?.length ?? 0}</div>
+        </div>
+        <div className="card bg-blue-50">
+          <div className="text-sm text-slate-600">Engagement (rows)</div>
+          <div className="text-3xl font-semibold">{engage?.length ?? 0}</div>
+        </div>
+      </div>
 
-    {/* KPI tiles */}
-    <div className="grid md:grid-cols-3 gap-4">
-      <div className="card bg-blue-50">
-        <div className="text-sm text-slate-600">Program Utilization (rows)</div>
-        <div className="text-3xl font-semibold">{util?.length ?? 0}</div>
+      {/* Charts */}
+      <div className="card">
+        <h3 className="font-medium mb-2">Utilization by Month</h3>
+        <UtilizationBar rows={util ?? []} />
       </div>
-      <div className="card bg-blue-50">
-        <div className="text-sm text-slate-600">Areas of Need (rows)</div>
-        <div className="text-3xl font-semibold">{needs?.length ?? 0}</div>
+      <div className="card">
+        <h3 className="font-medium mb-2">Areas of Need by Month (stacked)</h3>
+        <AreasStacked rows={needs ?? []} />
       </div>
-      <div className="card bg-blue-50">
-        <div className="text-sm text-slate-600">Engagement (rows)</div>
-        <div className="text-3xl font-semibold">{engage?.length ?? 0}</div>
+      <div className="card">
+        <h3 className="font-medium mb-2">Weekly Engagement by Coordinator</h3>
+        <EngagementTrend rows={engage ?? []} />
       </div>
-    </div>
 
-    {/* Charts */}
-    <div className="card">
-      <h3 className="font-medium mb-2">Utilization by Month</h3>
-      <UtilizationBar rows={util ?? []} />
-    </div>
-    <div className="card">
-      <h3 className="font-medium mb-2">Areas of Need by Month (stacked)</h3>
-      <AreasStacked rows={needs ?? []} />
-    </div>
-    <div className="card">
-      <h3 className="font-medium mb-2">Weekly Engagement by Coordinator</h3>
-      <EngagementTrend rows={engage ?? []} />
-    </div>
-
-    {/* Recent Notes */}
-    <div className="card">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-medium">Recent Progress Notes</h3>
-        <a href="/notes" className="text-blue-700 text-sm underline">View all</a>
-      </div>
-      <div className="grid gap-3">
-        {(recentNotes ?? []).map((n: any) => (
-          <div key={n.id} className="rounded-xl border p-3 bg-white">
-            <div className="text-sm text-slate-600">
-              {new Date(n.note_date).toLocaleDateString()} • {n.meeting_location}
+      {/* Recent Notes */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-medium">Recent Progress Notes</h3>
+          <a href="/notes" className="text-blue-700 text-sm underline">View all</a>
+        </div>
+        <div className="grid gap-3">
+          {(recentNotes ?? []).map((n: any) => (
+            <div key={n.id} className="rounded-xl border p-3 bg-white">
+              <div className="text-sm text-slate-600">
+                {new Date(n.note_date).toLocaleDateString()} • {n.meeting_location}
+              </div>
+              <div className="flex flex-wrap gap-2 my-2">
+                {(n.areas_of_need as string[] ?? []).map((a: string) => (
+                  <span key={a} className="badge">{a}</span>
+                ))}
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{n.meeting_summary}</p>
             </div>
-            <div className="flex flex-wrap gap-2 my-2">
-              {(n.areas_of_need as string[] ?? []).map((a: string) => (
-                <span key={a} className="badge">{a}</span>
-              ))}
-            </div>
-            <p className="text-sm whitespace-pre-wrap">{n.meeting_summary}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
