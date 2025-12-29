@@ -90,72 +90,74 @@ const { data: engage } = await engageQuery
   if (first(sp.end))   recentQuery = recentQuery.lte('note_date', first(sp.end)!)
   const { data: recentNotes } = await recentQuery
 
-  return (
+ return (
+  <div className="space-y-6">
+    {/* Header with Coordinator dropdown */}
     <div className="flex items-center justify-between">
-  <h1 className="text-2xl font-semibold text-blue-800">Dashboard</h1>
-  <CoordinatorSelect options={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name })) as any} />
-</div>
-
-    <div className="space-y-6">
-      {/* Filters */}
-      <QueryFilters
-        departments={DEPARTMENTS}
-        coordinators={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name }))}
-        areas={AREAS}
+      <h1 className="text-2xl font-semibold text-blue-800">Dashboard</h1>
+      <CoordinatorSelect
+        options={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name })) as any}
       />
+    </div>
 
-      {/* KPI tiles */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="card bg-blue-50">
-          <div className="text-sm text-slate-600">Program Utilization (rows)</div>
-          <div className="text-3xl font-semibold">{util?.length ?? 0}</div>
-        </div>
-        <div className="card bg-blue-50">
-          <div className="text-sm text-slate-600">Areas of Need (rows)</div>
-          <div className="text-3xl font-semibold">{needs?.length ?? 0}</div>
-        </div>
-        <div className="card bg-blue-50">
-          <div className="text-sm text-slate-600">Engagement (rows)</div>
-          <div className="text-3xl font-semibold">{engage?.length ?? 0}</div>
-        </div>
-      </div>
+    {/* Filters */}
+    <QueryFilters
+      departments={DEPARTMENTS}
+      coordinators={(coordOpts ?? []).map(c => ({ id: c.id, full_name: c.full_name }))}
+      areas={AREAS}
+    />
 
-      {/* Charts */}
-      <div className="card">
-        <h3 className="font-medium mb-2">Utilization by Month</h3>
-        <UtilizationBar rows={util ?? []} />
+    {/* KPI tiles */}
+    <div className="grid md:grid-cols-3 gap-4">
+      <div className="card bg-blue-50">
+        <div className="text-sm text-slate-600">Program Utilization (rows)</div>
+        <div className="text-3xl font-semibold">{util?.length ?? 0}</div>
       </div>
-      <div className="card">
-        <h3 className="font-medium mb-2">Areas of Need by Month (stacked)</h3>
-        <AreasStacked rows={needs ?? []} />
+      <div className="card bg-blue-50">
+        <div className="text-sm text-slate-600">Areas of Need (rows)</div>
+        <div className="text-3xl font-semibold">{needs?.length ?? 0}</div>
       </div>
-      <div className="card">
-        <h3 className="font-medium mb-2">Weekly Engagement by Coordinator</h3>
-        <EngagementTrend rows={engage ?? []} />
-      </div>
-
-      {/* Recent Notes */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium">Recent Progress Notes</h3>
-          <a href="/notes" className="text-blue-700 text-sm underline">View all</a>
-        </div>
-        <div className="grid gap-3">
-          {(recentNotes ?? []).map((n: any) => (
-            <div key={n.id} className="rounded-xl border p-3 bg-white">
-              <div className="text-sm text-slate-600">
-                {new Date(n.note_date).toLocaleDateString()} • {n.meeting_location}
-              </div>
-              <div className="flex flex-wrap gap-2 my-2">
-                {(n.areas_of_need as string[] ?? []).map((a: string) => (
-                  <span key={a} className="badge">{a}</span>
-                ))}
-              </div>
-              <p className="text-sm whitespace-pre-wrap">{n.meeting_summary}</p>
-            </div>
-          ))}
-        </div>
+      <div className="card bg-blue-50">
+        <div className="text-sm text-slate-600">Engagement (rows)</div>
+        <div className="text-3xl font-semibold">{engage?.length ?? 0}</div>
       </div>
     </div>
-  )
-}
+
+    {/* Charts */}
+    <div className="card">
+      <h3 className="font-medium mb-2">Utilization by Month</h3>
+      <UtilizationBar rows={util ?? []} />
+    </div>
+    <div className="card">
+      <h3 className="font-medium mb-2">Areas of Need by Month (stacked)</h3>
+      <AreasStacked rows={needs ?? []} />
+    </div>
+    <div className="card">
+      <h3 className="font-medium mb-2">Weekly Engagement by Coordinator</h3>
+      <EngagementTrend rows={engage ?? []} />
+    </div>
+
+    {/* Recent Notes */}
+    <div className="card">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-medium">Recent Progress Notes</h3>
+        <a href="/notes" className="text-blue-700 text-sm underline">View all</a>
+      </div>
+      <div className="grid gap-3">
+        {(recentNotes ?? []).map((n: any) => (
+          <div key={n.id} className="rounded-xl border p-3 bg-white">
+            <div className="text-sm text-slate-600">
+              {new Date(n.note_date).toLocaleDateString()} • {n.meeting_location}
+            </div>
+            <div className="flex flex-wrap gap-2 my-2">
+              {(n.areas_of_need as string[] ?? []).map((a: string) => (
+                <span key={a} className="badge">{a}</span>
+              ))}
+            </div>
+            <p className="text-sm whitespace-pre-wrap">{n.meeting_summary}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
